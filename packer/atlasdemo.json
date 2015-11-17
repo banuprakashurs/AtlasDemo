@@ -1,0 +1,47 @@
+{
+    "variables": {
+        "project_id": "{{env `GOOGLE_PROJECT_ID`}}",
+        "atlas_username": "{{env `ATLAS_USERNAME`}}",
+        "atlas_token": "{{env `ATLAS_TOKEN`}}"
+    },
+    "builders": [
+        {
+            "type": "googlecompute",
+            "project_id": "{{user `project_id`}}",
+            "account_file": "pkey.json",
+            "zone": "us-central1-f",
+            "source_image": "ubuntu-1404-trusty-v20150909a",
+            "image_name": "atlasdemo-{{timestamp}}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+	        "sudo apt-get update -y",
+                "sudo apt-get install -y git maven default-jdk tomcat7 vim build-essential"
+            ]
+        },
+        {
+            "type": "shell",
+            "script": "scripts/base.sh"
+        }
+    ],
+    "push": {
+        "name": "{{user `atlas_username`}}/atlasdemo",
+        "vcs": false
+    },
+    "post-processors": [
+        [
+            {
+                "type": "atlas",
+                "token": "{{user `atlas_token`}}",
+                "artifact": "{{user `atlas_username`}}/atlasdemo",
+                "artifact_type": "google.image",
+                "metadata": {
+                  "created_at": "{{timestamp}}"
+                }
+            }
+        ]
+    ]
+}
